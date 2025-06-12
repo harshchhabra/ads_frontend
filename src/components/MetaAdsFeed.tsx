@@ -84,7 +84,7 @@ export function MetaAdsFeed({
               </div>
 
               <div className="mb-4">
-                <p className="font-semibold">Creative Text:</p>
+                <p className="font-semibold">Description:</p>
                 <p className="text-gray-700">
                   {showFullDescription
                     ? ad.ad_creative_bodies?.[0]
