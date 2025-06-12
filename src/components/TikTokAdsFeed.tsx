@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { AdPreviewModal } from './AdPreviewModal';
-import { Ad, AdFilters } from '../types/ads';
-import { mockAds, filterAds } from '../data/mockAds';
+import { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
+import { AdPreviewModal } from "./AdPreviewModal";
+import { Ad, AdFilters } from "../types/ads";
 
 interface TikTokAdsFeedProps {
   filters: AdFilters;
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
 }
 
 export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
@@ -16,14 +15,15 @@ export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
 
   useEffect(() => {
-    const tiktokAds = mockAds.filter(ad => ad.platform === 'tiktok');
-    setAds(filterAds(tiktokAds, filters));
+    // const tiktokAds = mockAds.filter(ad => ad.platform === 'tiktok');
+    // setAds(filterAds(tiktokAds, filters));
   }, [filters]);
-
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-gray-900">TikTok Ads Monitor</h2>
+      <h2 className="text-2xl font-semibold text-gray-900">
+        TikTok Ads Monitor
+      </h2>
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
@@ -32,10 +32,13 @@ export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
         </div>
       )}
 
-      <div className={viewMode === 'grid' 
-        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        : "space-y-4"
-      }>
+      <div
+        className={
+          viewMode === "grid"
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            : "space-y-4"
+        }
+      >
         {loading && (
           <div className="col-span-full text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -51,14 +54,16 @@ export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
           <div
             key={ad.id}
             className={`bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105 ${
-              viewMode === 'list' ? 'flex gap-4' : ''
+              viewMode === "list" ? "flex gap-4" : ""
             }`}
             onClick={() => setSelectedAd(ad)}
           >
-            <div className={`bg-gray-100 ${
-              viewMode === 'list' ? 'w-48 h-32' : 'aspect-video'
-            }`}>
-              {ad.media_type === 'video' ? (
+            <div
+              className={`bg-gray-100 ${
+                viewMode === "list" ? "w-48 h-32" : "aspect-video"
+              }`}
+            >
+              {ad.media_type === "video" ? (
                 <video
                   src={ad.media_urls[0]}
                   className="w-full h-full object-cover"
@@ -72,15 +77,19 @@ export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
                 />
               )}
             </div>
-            <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
+            <div className={`p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900">{ad.advertiser}</h3>
                 {ad.compliance_checks && ad.compliance_checks[0] && (
-                  <span className={`px-2 py-1 text-sm rounded-full ${
-                    ad.compliance_checks[0].verdict === 'High' ? 'bg-red-100 text-red-800' :
-                    ad.compliance_checks[0].verdict === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-sm rounded-full ${
+                      ad.compliance_checks[0].verdict === "High"
+                        ? "bg-red-100 text-red-800"
+                        : ad.compliance_checks[0].verdict === "Medium"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-green-100 text-green-800"
+                    }`}
+                  >
                     {ad.compliance_checks[0].verdict} Risk
                   </span>
                 )}
@@ -106,8 +115,12 @@ export function TikTokAdsFeed({ filters, viewMode }: TikTokAdsFeedProps) {
               <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
                 <span>{new Date(ad.created_at).toLocaleDateString()}</span>
                 <div className="flex items-center gap-3">
-                  <span>{ad.engagement_metrics.likes.toLocaleString()} likes</span>
-                  <span>{ad.engagement_metrics.views.toLocaleString()} views</span>
+                  <span>
+                    {ad.engagement_metrics.likes.toLocaleString()} likes
+                  </span>
+                  <span>
+                    {ad.engagement_metrics.views.toLocaleString()} views
+                  </span>
                 </div>
               </div>
             </div>

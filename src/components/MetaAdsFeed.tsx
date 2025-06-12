@@ -1,26 +1,24 @@
-import { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { AdPreviewModal } from './AdPreviewModal';
-import { Ad, AdFilters } from '../types/ads';
-import { mockAds, filterAds } from '../data/mockAds';
-
+import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import { AdPreviewModal } from "./AdPreviewModal";
+import { Ad } from "../types/ads";
 interface MetaAdsFeedProps {
-  filters: AdFilters;
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
+  data: any[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-export function MetaAdsFeed({ filters, viewMode }: MetaAdsFeedProps) {
-  const [ads, setAds] = useState<Ad[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function MetaAdsFeed({
+  viewMode,
+  data = [],
+  isLoading,
+  error,
+}: MetaAdsFeedProps) {
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+  const [showFullDescription] = useState(false);
 
-  useEffect(() => {
-    const metaAds = mockAds.filter(ad => ad.platform === 'facebook' || ad.platform === 'instagram');
-    setAds(filterAds(metaAds, filters));
-  }, [filters]);
-
-
+  // const toggleDescription = () => setShowFullDescription((prev) => !prev);
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-900">Meta Ads Monitor</h2>
@@ -32,82 +30,123 @@ export function MetaAdsFeed({ filters, viewMode }: MetaAdsFeedProps) {
         </div>
       )}
 
-      <div className={viewMode === 'grid' 
-        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        : "space-y-4"
-      }>
-        {loading && (
+      <div
+        className={
+          viewMode === "grid"
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            : "space-y-4"
+        }
+      >
+        {isLoading && (
           <div className="col-span-full text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading ads...</p>
           </div>
         )}
-        {!loading && ads.length === 0 && !error && (
+        {!isLoading && data.length === 0 && !error && (
           <div className="col-span-full text-center py-12">
             <p className="text-gray-600">No ads found.</p>
           </div>
         )}
-        {ads.map((ad) => (
-          <div
-            key={ad.id}
-            className={`bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105 ${
-              viewMode === 'list' ? 'flex gap-4' : ''
-            }`}
-            onClick={() => setSelectedAd(ad)}
-          >
-            <div className={`bg-gray-100 ${
-              viewMode === 'list' ? 'w-48 h-32' : 'aspect-video'
-            }`}>
-              {ad.media_type === 'video' ? (
-                <video
-                  src={ad.media_urls[0]}
-                  className="w-full h-full object-cover"
-                  controls
-                />
-              ) : (
-                <img
-                  src={ad.media_urls[0]}
-                  alt={ad.advertiser}
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
-            <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900">{ad.advertiser}</h3>
-                {ad.compliance_checks && ad.compliance_checks[0] && (
-                  <span className={`px-2 py-1 text-sm rounded-full ${
-                    ad.compliance_checks[0].verdict === 'High' ? 'bg-red-100 text-red-800' :
-                    ad.compliance_checks[0].verdict === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {ad.compliance_checks[0].verdict} Risk
-                  </span>
-                )}
+
+        {!!data.length &&
+          data.map((ad) => (
+            <div className="bg-white shadow-md rounded-md p-6 mb-6">
+              <h2 className="text-2xl font-bold mb-2">Ad ID: {ad.id}</h2>
+              <p className="text-sm text-gray-500 mb-2">
+                Created: {ad.ad_creation_time} | Delivery:{" "}
+                {ad.ad_delivery_start_time} - {ad.ad_delivery_stop_time}
+              </p>
+
+              <div className="mb-4">
+                <a
+                  href={ad.ad_snapshot_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline text-sm"
+                >
+                  View Ad Snapshot
+                </a>
               </div>
-              <p className="text-sm text-gray-600 line-clamp-2">{ad.ad_text}</p>
-              {ad.hashtags && ad.hashtags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {ad.hashtags.slice(0, 3).map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-700"
+
+              <div className="mb-4">
+                <p className="font-semibold">Platforms:</p>
+                <ul className="flex flex-wrap gap-2 text-sm text-gray-700">
+                  {ad.publisher_platforms.map((platform: string) => (
+                    <li
+                      key={platform}
+                      className="bg-gray-100 px-2 py-1 rounded"
                     >
-                      #{tag}
-                    </span>
+                      {platform}
+                    </li>
                   ))}
-                </div>
-              )}
-              <div className="mt-3 flex items-center justify-between text-sm text-gray-500">
-                <span>{new Date(ad.created_at).toLocaleDateString()}</span>
-                <div className="flex items-center gap-3">
-                  <span>{ad.engagement_metrics.likes.toLocaleString()} likes</span>
-                  <span>{ad.engagement_metrics.views.toLocaleString()} views</span>
-                </div>
+                </ul>
               </div>
+
+              <div className="mb-4">
+                <p className="font-semibold">Creative Text:</p>
+                <p className="text-gray-700">
+                  {showFullDescription
+                    ? ad.ad_creative_bodies?.[0]
+                    : `${ad.ad_creative_bodies?.[0].slice(0, 100)}${
+                        ad.ad_creative_bodies?.[0].length > 100 ? "..." : ""
+                      }`}
+                  {/* {ad.ad_creative_bodies?.[0].length > 100 && (
+                    <button
+                      onClick={toggleDescription}
+                      className="text-blue-600 hover:underline text-sm mt-1"
+                    >
+                      {showFullDescription ? "Show Less" : "Show More"}
+                    </button>
+                  )} */}
+                </p>
+              </div>
+
+              {/* <div>
+                <p className="font-semibold mb-2">Reach Breakdown:</p>
+                <div className="overflow-x-auto max-h-[300px] overflow-y-scroll border rounded">
+                  <table className="min-w-full text-sm text-left">
+                    <thead className="bg-gray-100 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2">Country</th>
+                        <th className="px-4 py-2">Age Range</th>
+                        <th className="px-4 py-2">Male</th>
+                        <th className="px-4 py-2">Female</th>
+                        <th className="px-4 py-2">Unknown</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ad?.age_country_gender_reach_breakdown?.map(
+                        (countryData) =>
+                          countryData.age_gender_breakdowns.map(
+                            (entry, index) => (
+                              <tr
+                                key={`${countryData.country}-${index}`}
+                                className="border-t"
+                              >
+                                <td className="px-4 py-2">
+                                  {index === 0 ? countryData.country : ""}
+                                </td>
+                                <td className="px-4 py-2">{entry.age_range}</td>
+                                <td className="px-4 py-2">
+                                  {entry.male ?? "-"}
+                                </td>
+                                <td className="px-4 py-2">
+                                  {entry.female ?? "-"}
+                                </td>
+                                <td className="px-4 py-2">
+                                  {entry.unknown ?? "-"}
+                                </td>
+                              </tr>
+                            )
+                          )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div> */}
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {selectedAd && (

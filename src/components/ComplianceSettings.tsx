@@ -1,12 +1,6 @@
-import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { Plus, Trash2, Save, AlertTriangle } from 'lucide-react';
-import { HexColorPicker } from 'react-colorful';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { useState, useEffect } from "react";
+import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import { HexColorPicker } from "react-colorful";
 
 interface ComplianceCriterion {
   id?: string;
@@ -21,12 +15,12 @@ interface ComplianceCriterion {
 export function ComplianceSettings() {
   const [criteria, setCriteria] = useState<ComplianceCriterion[]>([]);
   const [newCriterion, setNewCriterion] = useState<ComplianceCriterion>({
-    name: '',
-    description: '',
-    category: 'visual',
+    name: "",
+    description: "",
+    category: "visual",
     weight: 1.0,
     keywords: [],
-    enabled: true
+    enabled: true,
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedColor, setSelectedColor] = useState("#000000");
@@ -39,57 +33,61 @@ export function ComplianceSettings() {
   async function loadCriteria() {
     try {
       const { data, error } = await supabase
-        .from('compliance_criteria')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("compliance_criteria")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setCriteria(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load criteria');
+      setError(err instanceof Error ? err.message : "Failed to load criteria");
     }
   }
 
   async function saveCriterion(criterion: ComplianceCriterion) {
     try {
       const { error } = await supabase
-        .from('compliance_criteria')
+        .from("compliance_criteria")
         .insert([criterion]);
 
       if (error) throw error;
-      
+
       await loadCriteria();
       setNewCriterion({
-        name: '',
-        description: '',
-        category: 'visual',
+        name: "",
+        description: "",
+        category: "visual",
         weight: 1.0,
         keywords: [],
-        enabled: true
+        enabled: true,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save criterion');
+      setError(err instanceof Error ? err.message : "Failed to save criterion");
     }
   }
 
   async function deleteCriterion(id: string) {
     try {
       const { error } = await supabase
-        .from('compliance_criteria')
+        .from("compliance_criteria")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
       await loadCriteria();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete criterion');
+      setError(
+        err instanceof Error ? err.message : "Failed to delete criterion"
+      );
     }
   }
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-900">Compliance Settings</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">
+          Compliance Settings
+        </h2>
         <button
           onClick={() => saveCriterion(newCriterion)}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -110,7 +108,9 @@ export function ComplianceSettings() {
         <div className="p-6 space-y-6">
           {/* New Criterion Form */}
           <div className="border-b border-gray-200 pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Criterion</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Add New Criterion
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -119,7 +119,9 @@ export function ComplianceSettings() {
                 <input
                   type="text"
                   value={newCriterion.name}
-                  onChange={(e) => setNewCriterion({ ...newCriterion, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewCriterion({ ...newCriterion, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Enter criterion name"
                 />
@@ -130,7 +132,12 @@ export function ComplianceSettings() {
                 </label>
                 <select
                   value={newCriterion.category}
-                  onChange={(e) => setNewCriterion({ ...newCriterion, category: e.target.value })}
+                  onChange={(e) =>
+                    setNewCriterion({
+                      ...newCriterion,
+                      category: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="visual">Visual</option>
@@ -146,7 +153,12 @@ export function ComplianceSettings() {
                 <input
                   type="number"
                   value={newCriterion.weight}
-                  onChange={(e) => setNewCriterion({ ...newCriterion, weight: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    setNewCriterion({
+                      ...newCriterion,
+                      weight: parseFloat(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   step="0.1"
                   min="0"
@@ -159,11 +171,13 @@ export function ComplianceSettings() {
                 </label>
                 <input
                   type="text"
-                  value={newCriterion.keywords.join(', ')}
-                  onChange={(e) => setNewCriterion({ 
-                    ...newCriterion, 
-                    keywords: e.target.value.split(',').map(k => k.trim()) 
-                  })}
+                  value={newCriterion.keywords.join(", ")}
+                  onChange={(e) =>
+                    setNewCriterion({
+                      ...newCriterion,
+                      keywords: e.target.value.split(",").map((k) => k.trim()),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Enter keywords"
                 />
@@ -174,7 +188,12 @@ export function ComplianceSettings() {
                 </label>
                 <textarea
                   value={newCriterion.description}
-                  onChange={(e) => setNewCriterion({ ...newCriterion, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewCriterion({
+                      ...newCriterion,
+                      description: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   rows={3}
                   placeholder="Enter criterion description"
@@ -185,7 +204,9 @@ export function ComplianceSettings() {
 
           {/* Existing Criteria List */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Existing Criteria</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Existing Criteria
+            </h3>
             <div className="space-y-4">
               {criteria.map((criterion) => (
                 <div
@@ -193,8 +214,12 @@ export function ComplianceSettings() {
                   className="bg-gray-50 rounded-lg p-4 flex items-start justify-between"
                 >
                   <div>
-                    <h4 className="font-medium text-gray-900">{criterion.name}</h4>
-                    <p className="text-sm text-gray-500 mt-1">{criterion.description}</p>
+                    <h4 className="font-medium text-gray-900">
+                      {criterion.name}
+                    </h4>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {criterion.description}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {criterion.keywords.map((keyword, index) => (
                         <span
@@ -208,7 +233,9 @@ export function ComplianceSettings() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => criterion.id && deleteCriterion(criterion.id)}
+                      onClick={() =>
+                        criterion.id && deleteCriterion(criterion.id)
+                      }
                       className="p-2 text-red-600 hover:text-red-700 rounded-full hover:bg-red-50"
                     >
                       <Trash2 className="w-5 h-5" />
