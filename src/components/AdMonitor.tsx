@@ -130,6 +130,7 @@ export function AdMonitor() {
   const [params, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState({
     value: "all",
     label: "All Platforms",
@@ -291,54 +292,72 @@ export function AdMonitor() {
     }
   };
 
-  useEffect(() => {
-    const filters = {
-      keyword: searchQuery ?? "",
-      platform: selectedPlatform.value === "all" ? "" : selectedPlatform.value,
-      // product_type:
-      //   selectedProductType.value === "all" ? "" : selectedProductType.value,
-      // compliance_verdict:
-      //   selectedVerdict.value === "all" ? "" : selectedVerdict.value,
-      // // dateRange: dateRange,
-      // country: selectedCountry.value === "all" ? "" : selectedCountry.value,
-      // city: selectedCity.value === "all" ? "" : selectedCity.value,
-      // target_audience:
-      //   selectedAudience.value === "all" ? "" : selectedAudience.value,
-    };
+  const applyFilters = () => {
+    const filters: Record<string, string> = {};
+    filters.page = "1";
+    if (debouncedSearchQuery.trim())
+      filters.keyword = debouncedSearchQuery.trim();
+    if (selectedPlatform.value !== "all")
+      filters.platform = selectedPlatform.value;
+    if (selectedVerdict.value !== "all")
+      filters.compliance_verdict = selectedVerdict.value;
+    if (selectedProductType.value !== "all")
+      filters.product_type = selectedProductType.value;
+    if (selectedLocationType.value !== "all")
+      filters.location_type = selectedLocationType.value;
+    // if (selectedCountry.value !== "all")
+    //   filters.country = selectedCountry.value;
+    // if (selectedCountry.value === "UAE" && selectedCity.value !== "all") {
+    //   filters.city = selectedCity.value;
+    // }
+    if (selectedAudience.value !== "all")
+      filters.target_audience = selectedAudience.value;
+    if (isInfluencerCampaign.value !== "all") {
+      filters.influencer = isInfluencerCampaign.value;
+    }
+
     setSearchParams(filters);
+  };
+
+  useEffect(() => {
+    applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    dateRange,
-    isInfluencerCampaign.value,
-    selectedAudience.value,
-    selectedCity.value,
-    selectedCountry.value,
-    selectedLocationType.value,
-    selectedPlatform.value,
-    selectedProductType.value,
-    selectedVerdict.value,
-    setSearchParams,
+    searchQuery,
+    selectedPlatform,
+    selectedVerdict,
+    selectedProductType,
+    selectedLocationType,
+    selectedCountry,
+    selectedCity,
+    selectedAudience,
+    isInfluencerCampaign,
   ]);
-  // Debounced function to update search params
+
   const updateSearchParams = useCallback(
     _debounce((value: string) => {
-      const newParams = new URLSearchParams(params);
+      const currentParams = new URLSearchParams(params);
       if (value.trim()) {
-        newParams.set("keyword", value.trim());
+        currentParams.set("keyword", value.trim());
       } else {
-        newParams.delete("keyword");
+        currentParams.delete("keyword");
       }
-      setSearchParams(newParams);
+      setSearchParams(currentParams);
     }, 1000),
     [params, setSearchParams]
   );
 
-  // Watch for changes in inputValue and trigger debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500); // Adjust debounce delay as needed
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   useEffect(() => {
     updateSearchParams(searchQuery);
-    return () => {
-      updateSearchParams.cancel(); // cleanup
-    };
+    return () => updateSearchParams.cancel();
   }, [searchQuery, updateSearchParams]);
 
   // Sync input state with URL param on mount
